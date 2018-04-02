@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>waterfall</title>
+	<script src="http://apps.bdimg.com/libs/jquery/1.9.1/jquery.min.js"></script>
+	<style>
+	* {
+		box-sizing: border-box;
+	}
+	ul {
+		margin: 0 auto;
+		list-style-type: none;
+		max-width: 1000px;
+		position: relative;
+	}
+	li {
+		position: absolute;
+		display: inline-block;
+		width: 300px;
+		border: 1px solid #eee;
+		padding: 10px;
+		margin: 5px;
+	}
+	li>img {
+		width: 100%;
+	}
+	li>h4 {
+		margin: 5px;
+	}
+	p {
+		font-size: 14px;
+		color: #aaa;
+	}
+
+
+
+	</style>
+</head>
+<body>
+<ul>
+</ul>
+<script>
+var colIndexArr = [];
+
+var datapage = 1;
+function getData(){
+ 	$.ajax({
+ 		url: 'http://platform.sina.com.cn/slide/album_tech',
+ 		dataType: 'jsonp',
+ 		data: {
+ 			app_key: '1271687855',
+ 			num: 10,
+ 			page: datapage
+ 		},
+ 		jsonp:"jsoncallback"
+ 	}).done(function(res){
+ 		res.data.forEach(function(item){
+ 			var newNode = concactNode(item)
+ 			console.log(item)
+ 			newNode.find('img').load(function(){
+ 				$('ul').append(newNode);
+ 			    masonry(newNode);
+ 			})
+ 			datapage++
+ 		});
+ 	})
+ }
+ function concactNode(data){
+ 	var node = `<li>
+	<img src="${data.img_url}" alt="">
+	<h4>${data.short_name}</h4>
+	<hr/>
+	<p>
+	${data.short_intro}
+		</p>
+
+	</li>`
+	return $(node);
+ }
+ getData(); 
+ function masonry(node){
+ var colNum = Math.floor($('ul').outerWidth()/$('li').outerWidth(true));
+ if(colIndexArr[0] === undefined){
+    for(var i=0; i<colNum; i++){
+       colIndexArr.push(0);  
+    }			
+    }
+    var minCol = colIndexArr[0];
+    var minIndex = 0;
+    for(var i=1; i<colNum; i++){
+        if(colIndexArr[i]<minCol){
+          minCol = colIndexArr[i];
+          minIndex = i;
+        }
+      }
+     node.css({
+       left:$('li').outerWidth(true)*minIndex,
+       top: minCol
+     })
+     
+     colIndexArr[minIndex] += node.outerHeight(true);
+    }
+
+  function isEnd(){
+  	return window.scrollY + window.innerHeight  > $('li:last-child').offset().top
+  }
+  var timer;
+  window.onscroll = function(){
+  	if(isEnd()){
+  		if(timer){
+  			clearTimeout(timer)
+  		}
+  		timer = setTimeout(function(){
+  			getData()
+  		},100)
+
+  	}
+  }
+  //   // window.onresize = function(){
+    //   var colNum = $('.container').outerWidth()/$('img').outerWidth(true);
+    //   var colIndexArr = [];
+    //   for(var i=0; i<colNum; i++){
+    //     colIndexArr.push(0)
+    //   }
+    //   var minCol = colIndexArr[0];
+    //   var minIndex = 0;
+    //   $('img').each(function(){
+    //     var minCol = colIndexArr[0];
+    //     var minIndex = 0;
+    //     for(var i=1; i<colNum; i++){
+    //     if(colIndexArr[i]<minCol){
+    //       minCol = colIndexArr[i];
+    //       minIndex = i;
+    //     }
+    //   }
+    //  $(this).css({
+    //    left:$('img').outerWidth()*minIndex,
+    //    top: minCol
+    //  })
+    //  colIndexArr[minIndex] += $(this).outerHeight();
+    //  })
+      
+    // }
+</script>
+</body>
+</html>
